@@ -19,6 +19,11 @@ public class EmployeeController {
         return ("HelloWorld");
     }
 
+    @GetMapping("/ping")
+    public String PP() {
+        return ("Pong");
+    }
+
     @GetMapping("/getEmployee")
     public ResponseEntity<?> getAllEmploy(){
         if(repository.findAll().isEmpty()){
