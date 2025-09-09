@@ -1,60 +1,44 @@
 package com.example.employee;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.Optional;
 
-import java.util.List;
-@RestController
 @CrossOrigin
+@RestController
 public class EmployeeController {
-    @Autowired
-    private EmployeeRepository repository;
-    @Autowired
-//    private DepartmentRepository deptRepo;
 
+    private final EmployeeService service;
+
+    public EmployeeController(EmployeeService service){
+        this.service=service;
+    }
 
     @GetMapping("/")
     public String hello() {
-        return ("HelloWorld");
-    }
-
-    @GetMapping("/ping")
-    public String PP() {
-        return ("Pong");
+        return ("Backend is running.");
     }
 
     @GetMapping("/getEmployee")
-    public ResponseEntity<?> getAllEmploy(){
-        if(repository.findAll().isEmpty()){
-            return ResponseEntity.status(404).body("No Employee exists");
-        }
-        else{
-            List<Employee> employees=repository.findAll();
-            return ResponseEntity.ok(employees);
-        }
+    public ResponseEntity<?> getAllEmploy() {
+        if(service.getEmp().isEmpty())
+            return ResponseEntity.status(404).body("No employee exists");
+        return ResponseEntity.ok(service.getEmp());
     }
 
     @GetMapping("/getEmployee/{id}")
-    public ResponseEntity<?> getEmpById(@PathVariable Long id){
-        if(repository.existsById(id)){
-            return ResponseEntity.ok(repository.findById(id).get());
-        }
-        else{
-            return ResponseEntity.status(404).body("Employee doesn't Exist");
-        }
+    public ResponseEntity<?> getEmpById(@PathVariable Long id) {
+        Optional<Employee> emp=service.getEmpById(id);
+        if(emp.isEmpty())
+            return ResponseEntity.status(404).body("Employee doesn't exists.");
+        return ResponseEntity.ok(emp.get());
     }
 
     @PostMapping("/createEmployee")
-    public ResponseEntity<?> addEmployee(@RequestBody Employee employee){
-//        System.out.println(employee);
-        if(repository.existsById(employee.getId())){
-            return ResponseEntity.status(404).body("BEMSID already exist");
-        }
-        else {
-            repository.save(employee);
-            return ResponseEntity.ok("Id: "+employee.getId()+"\n Created Successfully");
-        }
+    public ResponseEntity<?> addEmployee(@RequestBody Employee employee) {
+        String createEmp=service.createEmployee(employee);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createEmp);
     }
 
 //    @PostMapping("/department")
@@ -65,55 +49,23 @@ public class EmployeeController {
 
 
     @PutMapping("/updateEmployee/{id}")
-    public ResponseEntity<?> updateEmp(@PathVariable Long id,@RequestBody Employee newEmployee){
-        if(repository.existsById(id)) {
-            Employee employee = repository.findById(id).get();
-            employee.setName(newEmployee.getName());
-            employee.setRole(newEmployee.getRole());
-            employee.setProject(newEmployee.getProject());
-            repository.save(employee);
-            return ResponseEntity.ok("Id: "+employee.getId()+"\n Updated Successfully");
-        }
-        else{
-            return ResponseEntity.status(404).body("Employee doesn't Exist");
-        }
+    public ResponseEntity<?> updateEmp(@PathVariable Long id, @RequestBody Employee newEmployee) {
+        Optional<Employee> emp=service.getEmpById(id);
+        if(emp.isEmpty())
+            return ResponseEntity.status(404).body("Employee doesn't exists.");
+        return ResponseEntity.ok(service.upEmp(newEmployee));
     }
 
     @DeleteMapping("/delEmployee/{id}")
-    public ResponseEntity<?>  delEmp(@PathVariable Long id){
-        if(repository.existsById(id)){
-            Employee employee=repository.findById(id).get();
-            repository.delete(employee);
-            return ResponseEntity.ok("Id: "+employee.getId()+"\n Deleted Successfully");
-        }
-        else{
-            return ResponseEntity.status(404).body("Employee doesn't Exist");
-        }
-
+    public ResponseEntity<?> delEmp(@PathVariable Long id) {
+        Optional<Employee> emp=service.getEmpById(id);
+        if(emp.isEmpty())
+            return ResponseEntity.status(404).body("Employee doesn't exists.");
+        return ResponseEntity.ok(service.delEmp(id));
     }
-
-
-
-
 }
-//@RestController("/dept")
-//@CrossOrigin
-//class DepartmentController{
-//
-//    @Autowired
-//    private DepartmentRepository deptRepo;
-//
-//    @GetMapping
-//    public ResponseEntity<?> getDept(){
-//        return (ResponseEntity<?>) ResponseEntity.ok("Department is fetched.");
-//    }
-//
-//    @PostMapping("/{id}")
-//    public ResponseEntity<?> setDept(@PathVariable Long id){
-//        if(!deptRepo.existsById(id))
-//            return ResponseEntity.status(404).body("No information");
-//        else{
-//            return ResponseEntity.ok(deptRepo.findById(id));
-//        }
-//    }
-//}
+
+
+
+
+
