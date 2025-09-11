@@ -1,6 +1,7 @@
 package com.example.employee;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -39,8 +40,9 @@ public class EmployeeControllerTest {
         mockMvc.perform(get("/getEmployee"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].name").value("Yash"));
+//        verify(employeeService).getEmp();
     }
-
+    
     @Test
     void testGetEmpById() throws Exception {
         Employee emp = new Employee(5555575L, "Yash", "Transformation", "Developer");
@@ -49,6 +51,8 @@ public class EmployeeControllerTest {
         mockMvc.perform(get("/getEmployee/{id}", 5555575))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(5555575L));
+        verify(employeeService).getEmpById(5555575L);
+
     }
 
     @Test
@@ -62,6 +66,7 @@ public class EmployeeControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(past)))
                 .andExpect(status().isOk());
+        verify(employeeService).upEmp(any(Employee.class));
     }
 
     @Test
@@ -72,6 +77,7 @@ public class EmployeeControllerTest {
         mockMvc.perform(delete("/delEmployee/{id}", 5555575L))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Id : 5555575 Deleted Successfully")));
+        verify(employeeService).delEmp(5555575L);
     }
 
 }
